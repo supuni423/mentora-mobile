@@ -6,6 +6,7 @@ import '../../widgets/auth_gate.dart';
 import '../courses/course_list_screen.dart';
 import '../enrollments/my_enrollments_screen.dart';
 import '../profile/profile_screen.dart';
+import '../recommendations/recommendation_screen.dart';
 
 /// Bottom-nav shell: Courses is always open (public browsing), the other
 /// tabs show AuthGate when the student isn't logged in.
@@ -25,6 +26,7 @@ class _HomeShellState extends State<HomeShell> {
 
     final tabs = [
       const CourseListScreen(),
+      const RecommendationScreen(),
       isAuthenticated
           ? const MyEnrollmentsScreen()
           : const AuthGate(message: 'Log in to see your enrollments'),
@@ -42,6 +44,10 @@ class _HomeShellState extends State<HomeShell> {
           NavigationDestination(
             icon: Icon(Icons.school_outlined),
             label: 'Courses',
+          ),
+          NavigationDestination(
+            icon: Icon(Icons.auto_awesome_outlined),
+            label: 'For You',
           ),
           NavigationDestination(
             icon: Icon(Icons.event_note_outlined),

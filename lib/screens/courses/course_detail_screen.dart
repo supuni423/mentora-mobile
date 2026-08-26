@@ -3,6 +3,7 @@ import 'package:provider/provider.dart';
 
 import '../../providers/auth_provider.dart';
 import '../../providers/course_provider.dart';
+import '../../theme/app_theme.dart';
 import '../../widgets/error_view.dart';
 import '../../widgets/loading_indicator.dart';
 import '../auth/login_screen.dart';
@@ -75,16 +76,18 @@ class _CourseDetailBody extends StatelessWidget {
     return ListView(
       padding: const EdgeInsets.all(16),
       children: [
-        if (course.image != null)
-          ClipRRect(
-            borderRadius: BorderRadius.circular(12),
-            child: Image.network(
-              course.image!,
-              height: 180,
-              width: double.infinity,
-              fit: BoxFit.cover,
-            ),
-          ),
+        ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: course.image != null
+              ? Image.network(
+                  course.image!,
+                  height: 180,
+                  width: double.infinity,
+                  fit: BoxFit.cover,
+                  errorBuilder: (_, _, _) => _bannerPlaceholder(),
+                )
+              : _bannerPlaceholder(),
+        ),
         const SizedBox(height: 16),
         Text(course.title, style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 4),
@@ -190,6 +193,19 @@ class _CourseDetailBody extends StatelessWidget {
           ),
         ),
       ],
+    );
+  }
+
+  Widget _bannerPlaceholder() {
+    return Container(
+      height: 180,
+      width: double.infinity,
+      color: AppColors.mintLight,
+      child: const Icon(
+        Icons.school_outlined,
+        size: 48,
+        color: AppColors.mintDark,
+      ),
     );
   }
 }

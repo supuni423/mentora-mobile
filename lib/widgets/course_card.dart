@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../models/course.dart';
+import '../theme/app_theme.dart';
 
 class CourseCard extends StatelessWidget {
   const CourseCard({super.key, required this.course, required this.onTap});
@@ -20,7 +21,7 @@ class CourseCard extends StatelessWidget {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               ClipRRect(
-                borderRadius: BorderRadius.circular(8),
+                borderRadius: BorderRadius.circular(14),
                 child: course.image != null
                     ? Image.network(
                         course.image!,
@@ -61,7 +62,10 @@ class CourseCard extends StatelessWidget {
                         const Spacer(),
                         Text(
                           course.feeDisplay,
-                          style: const TextStyle(fontWeight: FontWeight.bold),
+                          style: const TextStyle(
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.mintDark,
+                          ),
                         ),
                       ],
                     ),
@@ -79,8 +83,8 @@ class CourseCard extends StatelessWidget {
     return Container(
       width: 72,
       height: 72,
-      color: Colors.grey.shade300,
-      child: const Icon(Icons.school_outlined),
+      color: AppColors.mintLight,
+      child: const Icon(Icons.school_outlined, color: AppColors.mintDark),
     );
   }
 }

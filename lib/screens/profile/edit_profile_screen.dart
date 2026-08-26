@@ -6,6 +6,7 @@ import 'package:provider/provider.dart';
 
 import '../../providers/profile_provider.dart';
 import '../../utils/validators.dart';
+import '../../widgets/avatar_image.dart';
 import '../../widgets/primary_button.dart';
 
 class EditProfileScreen extends StatefulWidget {
@@ -99,18 +100,16 @@ class _EditProfileScreenState extends State<EditProfileScreen> {
                 Center(
                   child: GestureDetector(
                     onTap: _pickImage,
-                    child: CircleAvatar(
-                      radius: 48,
-                      backgroundImage: _pickedImage != null
-                          ? FileImage(_pickedImage!)
-                          : (currentPicture != null
-                                    ? NetworkImage(currentPicture)
-                                    : null)
-                                as ImageProvider?,
-                      child: _pickedImage == null && currentPicture == null
-                          ? const Icon(Icons.camera_alt_outlined, size: 32)
-                          : null,
-                    ),
+                    child: _pickedImage != null
+                        ? CircleAvatar(
+                            radius: 48,
+                            backgroundImage: FileImage(_pickedImage!),
+                          )
+                        : AvatarImage(
+                            imageUrl: currentPicture,
+                            radius: 48,
+                            icon: Icons.camera_alt_outlined,
+                          ),
                   ),
                 ),
                 const SizedBox(height: 24),
