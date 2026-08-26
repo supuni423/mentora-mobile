@@ -4,6 +4,7 @@ import 'package:provider/provider.dart';
 import '../../models/recommendation.dart';
 import '../../providers/recommendation_provider.dart';
 import '../../theme/app_theme.dart';
+import '../../widgets/avatar_image.dart';
 import '../../widgets/error_view.dart';
 import '../../widgets/loading_indicator.dart';
 import '../../widgets/primary_button.dart';
@@ -18,7 +19,23 @@ const _days = [
   'Saturday',
   'Sunday',
 ];
-const _levels = ['A/L', 'O/L', 'Grade 1-5', 'University'];
+const _subjects = [
+  'Mathematics',
+  'Physics',
+  'Chemistry',
+  'ICT',
+  'English',
+  'Biology',
+  'Music',
+  'Business',
+  'Science',
+];
+const _levels = [
+  ('Grade 6-9 (Junior)', 'Junior'),
+  ('Grade 10-11 (O/L)', 'O/L'),
+  ('Grade 12-13 (A/L)', 'A/L'),
+  ('Undergraduate', 'University'),
+];
 const _modes = ['Online', 'Physical', 'Both'];
 
 class RecommendationScreen extends StatefulWidget {
@@ -29,17 +46,16 @@ class RecommendationScreen extends StatefulWidget {
 }
 
 class _RecommendationScreenState extends State<RecommendationScreen> {
-  final _subjects = TextEditingController();
   final _budget = TextEditingController();
   final _goal = TextEditingController();
   final _city = TextEditingController();
+  final Set<String> _selectedSubjects = {};
   String? _level;
   String _mode = 'Both';
   final Set<String> _selectedDays = {};
 
   @override
   void dispose() {
-    _subjects.dispose();
     _budget.dispose();
     _goal.dispose();
     _city.dispose();
@@ -48,11 +64,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
 
   void _submit() {
     final preferences = RecommendationPreferences(
-      subjects: _subjects.text
-          .split(',')
-          .map((s) => s.trim())
-          .where((s) => s.isNotEmpty)
-          .toList(),
+      subjects: _selectedSubjects.toList(),
       level: _level,
       mode: _mode,
       availableDays: _selectedDays.toList(),
@@ -89,43 +101,66 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.stretch,
         children: [
-          Row(
-            children: const [
-              Icon(Icons.auto_awesome, color: AppColors.mintDark),
-              SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  'Tell us what you\'re looking for and our AI will match you with the best courses.',
-                ),
-              ),
-            ],
-          ),
+          _MatchingBanner(),
           const SizedBox(height: 20),
-          TextField(
-            controller: _subjects,
-            decoration: const InputDecoration(
-              labelText: 'Subjects (comma separated)',
-              hintText: 'e.g. Mathematics, ICT',
+          const _StepsExplainer(),
+          const SizedBox(height: 28),
+          _SectionHeader(
+            icon: Icons.menu_book_outlined,
+            title: 'Which subjects do you need help with?',
+          ),
+          const SizedBox(height: 4),
+          const Text(
+            'Select all that apply — the more you choose, the better we match',
+            style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
+          ),
+          const SizedBox(height: 12),
+          Wrap(
+            spacing: 8,
+            runSpacing: 8,
+            children: _subjects.map((subject) {
+              final selected = _selectedSubjects.contains(subject);
+              return FilterChip(
+                label: Text(subject),
+                selected: selected,
+                onSelected: (v) => setState(() {
+                  if (v) {
+                    _selectedSubjects.add(subject);
+                  } else {
+                    _selectedSubjects.remove(subject);
+                  }
+                }),
+              );
+            }).toList(),
+          ),
+          const SizedBox(height: 24),
+          _SectionHeader(
+            icon: Icons.school_outlined,
+            title: 'What is your current level?',
+          ),
+          const SizedBox(height: 12),
+          ..._levels.map(
+            (entry) => _SelectableRow(
+              label: entry.$1,
+              selected: _level == entry.$2,
+              onTap: () =>
+                  setState(() => _level = _level == entry.$2 ? null : entry.$2),
             ),
           ),
+          const SizedBox(height: 24),
+          _SectionHeader(icon: Icons.tune, title: 'Preferred mode'),
           const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            initialValue: _level,
-            decoration: const InputDecoration(labelText: 'Level'),
-            items: [
-              const DropdownMenuItem(value: null, child: Text('Any')),
-              ..._levels.map((l) => DropdownMenuItem(value: l, child: Text(l))),
-            ],
-            onChanged: (v) => setState(() => _level = v),
-          ),
-          const SizedBox(height: 12),
-          DropdownButtonFormField<String>(
-            initialValue: _mode,
-            decoration: const InputDecoration(labelText: 'Preferred mode'),
-            items: _modes
-                .map((m) => DropdownMenuItem(value: m, child: Text(m)))
+          Wrap(
+            spacing: 8,
+            children: _modes
+                .map(
+                  (m) => ChoiceChip(
+                    label: Text(m),
+                    selected: _mode == m,
+                    onSelected: (_) => setState(() => _mode = m),
+                  ),
+                )
                 .toList(),
-            onChanged: (v) => setState(() => _mode = v ?? _mode),
           ),
           if (_mode != 'Online') ...[
             const SizedBox(height: 12),
@@ -134,7 +169,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
               decoration: const InputDecoration(labelText: 'City'),
             ),
           ],
-          const SizedBox(height: 12),
+          const SizedBox(height: 20),
           TextField(
             controller: _budget,
             keyboardType: TextInputType.number,
@@ -148,9 +183,12 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
             ),
             maxLines: 2,
           ),
-          const SizedBox(height: 16),
-          Text('Available days', style: Theme.of(context).textTheme.titleSmall),
-          const SizedBox(height: 8),
+          const SizedBox(height: 24),
+          _SectionHeader(
+            icon: Icons.calendar_today_outlined,
+            title: 'Available days',
+          ),
+          const SizedBox(height: 12),
           Wrap(
             spacing: 8,
             runSpacing: 8,
@@ -169,7 +207,7 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
               );
             }).toList(),
           ),
-          const SizedBox(height: 24),
+          const SizedBox(height: 28),
           PrimaryButton(
             label: 'Find Matches',
             isLoading: context.watch<RecommendationProvider>().isLoading,
@@ -196,6 +234,190 @@ class _RecommendationScreenState extends State<RecommendationScreen> {
       separatorBuilder: (_, _) => const SizedBox(height: 12),
       itemBuilder: (context, index) =>
           _RecommendationCard(course: provider.results[index]),
+    );
+  }
+}
+
+/// Dark-to-accent gradient banner introducing the AI matching flow, echoing
+/// the "AI-Powered Tutor Matching" panel from the reference web dashboard.
+class _MatchingBanner extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        gradient: const LinearGradient(
+          colors: [AppColors.mintDark, AppColors.mint],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Row(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Container(
+            width: 44,
+            height: 44,
+            decoration: BoxDecoration(
+              color: Colors.white.withValues(alpha: 0.18),
+              borderRadius: BorderRadius.circular(14),
+            ),
+            child: const Icon(Icons.auto_awesome, color: Colors.white),
+          ),
+          const SizedBox(width: 14),
+          Expanded(
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Text(
+                  'AI-Powered Tutor Matching',
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 17,
+                    fontWeight: FontWeight.w800,
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  'Tell us what you need and our matching engine scores every course against your subjects, budget, and schedule to find your best fit.',
+                  style: TextStyle(
+                    color: Colors.white.withValues(alpha: 0.92),
+                    fontSize: 13,
+                    height: 1.4,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
+class _StepsExplainer extends StatelessWidget {
+  const _StepsExplainer();
+
+  static const _steps = [
+    (
+      Icons.checklist_rtl,
+      'Pick your subjects',
+      'Tell us what you struggle with',
+    ),
+    (Icons.tune, 'Set preferences', 'Budget, mode, and days'),
+    (Icons.auto_awesome, 'Get matched', 'AI scores every course for you'),
+    (Icons.flash_on_outlined, 'Enroll instantly', 'One tap to join the class'),
+  ];
+
+  @override
+  Widget build(BuildContext context) {
+    return GridView.count(
+      crossAxisCount: 2,
+      shrinkWrap: true,
+      physics: const NeverScrollableScrollPhysics(),
+      mainAxisSpacing: 12,
+      crossAxisSpacing: 12,
+      childAspectRatio: 2.6,
+      children: _steps
+          .map(
+            (step) => Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Icon(step.$1, size: 20, color: AppColors.mintDark),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text(
+                        step.$2,
+                        style: const TextStyle(
+                          fontWeight: FontWeight.w700,
+                          fontSize: 13,
+                        ),
+                      ),
+                      Text(
+                        step.$3,
+                        style: const TextStyle(
+                          fontSize: 11,
+                          color: AppColors.textSecondary,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          )
+          .toList(),
+    );
+  }
+}
+
+class _SectionHeader extends StatelessWidget {
+  const _SectionHeader({required this.icon, required this.title});
+
+  final IconData icon;
+  final String title;
+
+  @override
+  Widget build(BuildContext context) {
+    return Row(
+      children: [
+        Icon(icon, size: 18, color: AppColors.mintDark),
+        const SizedBox(width: 8),
+        Text(
+          title,
+          style: const TextStyle(fontWeight: FontWeight.w700, fontSize: 15),
+        ),
+      ],
+    );
+  }
+}
+
+class _SelectableRow extends StatelessWidget {
+  const _SelectableRow({
+    required this.label,
+    required this.selected,
+    required this.onTap,
+  });
+
+  final String label;
+  final bool selected;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.only(bottom: 8),
+      child: InkWell(
+        borderRadius: BorderRadius.circular(14),
+        onTap: onTap,
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          decoration: BoxDecoration(
+            color: selected ? AppColors.mintLight : AppColors.surface,
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+              color: selected ? AppColors.mint : AppColors.border,
+            ),
+          ),
+          child: Row(
+            children: [
+              Icon(
+                selected
+                    ? Icons.radio_button_checked
+                    : Icons.radio_button_unchecked,
+                size: 20,
+                color: selected ? AppColors.mintDark : AppColors.textSecondary,
+              ),
+              const SizedBox(width: 12),
+              Text(label, style: const TextStyle(fontSize: 14)),
+            ],
+          ),
+        ),
+      ),
     );
   }
 }
@@ -232,8 +454,19 @@ class _RecommendationCard extends StatelessWidget {
                   _MatchScorePill(score: course.matchScore),
                 ],
               ),
-              const SizedBox(height: 4),
-              Text('by ${course.tutor.name} • ${course.subject}'),
+              const SizedBox(height: 8),
+              Row(
+                children: [
+                  AvatarImage(
+                    imageUrl: course.tutor.profilePicture,
+                    radius: 12,
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text('${course.tutor.name} • ${course.subject}'),
+                  ),
+                ],
+              ),
               const SizedBox(height: 10),
               Container(
                 padding: const EdgeInsets.all(10),
@@ -263,22 +496,15 @@ class _RecommendationCard extends StatelessWidget {
                 ),
               ),
               const SizedBox(height: 10),
-              Row(
-                children: [
-                  const Icon(Icons.star, size: 16, color: Colors.amber),
-                  const SizedBox(width: 4),
-                  Text(
-                    '${course.rating.toStringAsFixed(1)} (${course.reviews})',
+              Align(
+                alignment: Alignment.centerRight,
+                child: Text(
+                  course.feeDisplay,
+                  style: const TextStyle(
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.mintDark,
                   ),
-                  const Spacer(),
-                  Text(
-                    course.feeDisplay,
-                    style: const TextStyle(
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.mintDark,
-                    ),
-                  ),
-                ],
+                ),
               ),
             ],
           ),

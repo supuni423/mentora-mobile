@@ -33,7 +33,7 @@ class StatusBadge extends StatelessWidget {
         borderRadius: BorderRadius.circular(999),
       ),
       child: Text(
-        status,
+        EnrollmentStatus.label(status),
         style: TextStyle(
           color: _color,
           fontWeight: FontWeight.w700,

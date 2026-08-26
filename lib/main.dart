@@ -7,6 +7,7 @@ import 'providers/enrollment_provider.dart';
 import 'providers/profile_provider.dart';
 import 'providers/recommendation_provider.dart';
 import 'screens/home/home_shell.dart';
+import 'screens/welcome/welcome_screen.dart';
 import 'services/api_client.dart';
 import 'services/auth_service.dart';
 import 'services/course_service.dart';
@@ -79,8 +80,45 @@ class MyApp extends StatelessWidget {
         title: 'Mentora',
         debugShowCheckedModeBanner: false,
         theme: AppTheme.light(),
-        home: const HomeShell(),
+        // This is a phone UI — on a wide browser window (the web target),
+        // constrain to a phone-like width instead of stretching grids/cards
+        // edge to edge. No-op on real mobile devices, whose screens are
+        // already narrower than this.
+        builder: (context, child) => ColoredBox(
+          color: AppColors.background,
+          child: Center(
+            child: ConstrainedBox(
+              constraints: const BoxConstraints(maxWidth: 480),
+              child: child,
+            ),
+          ),
+        ),
+        home: const _AppRoot(),
       ),
     );
+  }
+}
+
+/// Swaps Welcome for HomeShell in-place (same root route) rather than
+/// pushing a new one, so Login/Register's `popUntil((r) => r.isFirst)`
+/// still lands correctly regardless of which of the two is currently shown.
+class _AppRoot extends StatefulWidget {
+  const _AppRoot();
+
+  @override
+  State<_AppRoot> createState() => _AppRootState();
+}
+
+class _AppRootState extends State<_AppRoot> {
+  bool _showWelcome = true;
+
+  @override
+  Widget build(BuildContext context) {
+    if (_showWelcome) {
+      return WelcomeScreen(
+        onGetStarted: () => setState(() => _showWelcome = false),
+      );
+    }
+    return const HomeShell();
   }
 }

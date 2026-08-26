@@ -9,6 +9,11 @@ class EnrollmentStatus {
   static const pending = 'pending';
 
   static const all = [requested, approved, active, rejected, cancelled];
+
+  /// Display label for a raw status value, e.g. 'requested' -> 'Requested'.
+  static String label(String status) => status.isEmpty
+      ? status
+      : '${status[0].toUpperCase()}${status.substring(1)}';
 }
 
 class Enrollment {

@@ -92,18 +92,13 @@ class _CourseDetailBody extends StatelessWidget {
         Text(course.title, style: Theme.of(context).textTheme.headlineSmall),
         const SizedBox(height: 4),
         Text('by ${course.tutorName ?? 'Unknown tutor'}'),
-        const SizedBox(height: 8),
-        Row(
-          children: [
-            const Icon(Icons.star, color: Colors.amber, size: 18),
-            const SizedBox(width: 4),
-            Text(
-              '${course.averageRating.toStringAsFixed(1)} (${course.reviewCount} reviews)',
-            ),
-            const SizedBox(width: 16),
-            if (course.location != null) Text(course.location!),
-          ],
-        ),
+        if (course.location != null) ...[
+          const SizedBox(height: 4),
+          Text(
+            course.location!,
+            style: const TextStyle(color: AppColors.textSecondary),
+          ),
+        ],
         const SizedBox(height: 8),
         Wrap(
           spacing: 8,
@@ -182,13 +177,6 @@ class _CourseDetailBody extends StatelessWidget {
             child: ListTile(
               title: Text(review.studentName ?? 'Student'),
               subtitle: Text(review.comment ?? ''),
-              trailing: Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  const Icon(Icons.star, size: 16, color: Colors.amber),
-                  Text('${review.rating}'),
-                ],
-              ),
             ),
           ),
         ),

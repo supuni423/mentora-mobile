@@ -51,14 +51,28 @@ class CourseCard extends StatelessWidget {
                       ].where((s) => s != null && s.isNotEmpty).join(' • '),
                       style: Theme.of(context).textTheme.bodySmall,
                     ),
-                    const SizedBox(height: 6),
+                    const SizedBox(height: 8),
                     Row(
                       children: [
-                        const Icon(Icons.star, size: 16, color: Colors.amber),
-                        const SizedBox(width: 4),
-                        Text(
-                          '${course.averageRating.toStringAsFixed(1)} (${course.reviewCount})',
-                        ),
+                        if (course.mode != null)
+                          Container(
+                            padding: const EdgeInsets.symmetric(
+                              horizontal: 8,
+                              vertical: 3,
+                            ),
+                            decoration: BoxDecoration(
+                              color: AppColors.mintLight,
+                              borderRadius: BorderRadius.circular(999),
+                            ),
+                            child: Text(
+                              course.mode!.toUpperCase(),
+                              style: const TextStyle(
+                                fontSize: 10,
+                                fontWeight: FontWeight.w700,
+                                color: AppColors.mintDark,
+                              ),
+                            ),
+                          ),
                         const Spacer(),
                         Text(
                           course.feeDisplay,

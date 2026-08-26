@@ -45,7 +45,9 @@ class _MyEnrollmentsScreenState extends State<MyEnrollmentsScreen> {
           ],
           bottom: TabBar(
             isScrollable: true,
-            tabs: _tabs.map((s) => Tab(text: s)).toList(),
+            tabs: _tabs
+                .map((s) => Tab(text: EnrollmentStatus.label(s)))
+                .toList(),
           ),
         ),
         body: Consumer<EnrollmentProvider>(

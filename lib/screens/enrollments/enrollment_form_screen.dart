@@ -72,18 +72,26 @@ class _EnrollmentFormScreenState extends State<EnrollmentFormScreen> {
             ? 'online'
             : (widget.courseMode ?? 'online'));
 
+    // Some courses have empty/malformed schedule data server-side, so there
+    // may be no day/time options to pick from — fall back to whatever the
+    // enrollment already had (when editing) rather than defaulting to null,
+    // since the free-text fields below need a starting value either way.
     final days = widget.schedule.keys.toList();
-    _selectedDay =
-        existing?.selectedDay != null && days.contains(existing!.selectedDay)
-        ? existing.selectedDay
-        : (days.isNotEmpty ? days.first : null);
-    final times = _selectedDay != null
-        ? widget.schedule[_selectedDay] ?? const []
-        : const <String>[];
-    _selectedTime =
-        existing?.selectedTime != null && times.contains(existing!.selectedTime)
-        ? existing.selectedTime
-        : (times.isNotEmpty ? times.first : null);
+    if (days.isNotEmpty) {
+      _selectedDay =
+          existing?.selectedDay != null && days.contains(existing!.selectedDay)
+          ? existing.selectedDay
+          : days.first;
+      final times = widget.schedule[_selectedDay] ?? const [];
+      _selectedTime =
+          existing?.selectedTime != null &&
+              times.contains(existing!.selectedTime)
+          ? existing.selectedTime
+          : (times.isNotEmpty ? times.first : null);
+    } else {
+      _selectedDay = existing?.selectedDay;
+      _selectedTime = existing?.selectedTime;
+    }
   }
 
   @override
@@ -244,6 +252,30 @@ class _EnrollmentFormScreenState extends State<EnrollmentFormScreen> {
                         .map((t) => DropdownMenuItem(value: t, child: Text(t)))
                         .toList(),
                     onChanged: (v) => setState(() => _selectedTime = v),
+                  ),
+                ] else ...[
+                  // This course has no schedule data on the backend to pick
+                  // from — let the student specify a day/time directly
+                  // rather than showing dropdowns with nothing in them.
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    initialValue: _selectedDay,
+                    decoration: const InputDecoration(
+                      labelText: 'Preferred day',
+                      hintText: 'e.g. Monday',
+                    ),
+                    validator: (v) => Validators.required(v, label: 'Day'),
+                    onChanged: (v) => _selectedDay = v.trim(),
+                  ),
+                  const SizedBox(height: 12),
+                  TextFormField(
+                    initialValue: _selectedTime,
+                    decoration: const InputDecoration(
+                      labelText: 'Preferred time',
+                      hintText: 'e.g. 5:00 PM',
+                    ),
+                    validator: (v) => Validators.required(v, label: 'Time'),
+                    onChanged: (v) => _selectedTime = v.trim(),
                   ),
                 ],
                 const SizedBox(height: 12),

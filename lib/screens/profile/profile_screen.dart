@@ -128,13 +128,18 @@ class _ProfileBody extends StatelessWidget {
           ),
         ),
         const SizedBox(height: 24),
-        GridView.count(
-          crossAxisCount: 3,
+        GridView(
           shrinkWrap: true,
           physics: const NeverScrollableScrollPhysics(),
-          mainAxisSpacing: 10,
-          crossAxisSpacing: 10,
-          childAspectRatio: 0.95,
+          gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+            crossAxisCount: 3,
+            mainAxisSpacing: 10,
+            crossAxisSpacing: 10,
+            // Fixed row height instead of an aspect ratio — an
+            // aspect-ratio-driven size stretches these tiles absurdly tall
+            // on a wide viewport (e.g. the web/desktop target).
+            mainAxisExtent: 100,
+          ),
           children: [
             _StatTile(
               icon: Icons.school_outlined,
@@ -167,9 +172,9 @@ class _ProfileBody extends StatelessWidget {
               value: '${stats.subjectsStudying}',
             ),
             _StatTile(
-              icon: Icons.star_outline,
+              icon: Icons.rate_review_outlined,
               color: const Color(0xFFD9A441),
-              label: 'Avg rating',
+              label: 'Avg rating given',
               value: stats.avgRatingGiven.toStringAsFixed(1),
             ),
           ],
