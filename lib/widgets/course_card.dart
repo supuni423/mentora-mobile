@@ -1,0 +1,86 @@
+import 'package:flutter/material.dart';
+
+import '../models/course.dart';
+
+class CourseCard extends StatelessWidget {
+  const CourseCard({super.key, required this.course, required this.onTap});
+
+  final Course course;
+  final VoidCallback onTap;
+
+  @override
+  Widget build(BuildContext context) {
+    return Card(
+      clipBehavior: Clip.antiAlias,
+      child: InkWell(
+        onTap: onTap,
+        child: Padding(
+          padding: const EdgeInsets.all(12),
+          child: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              ClipRRect(
+                borderRadius: BorderRadius.circular(8),
+                child: course.image != null
+                    ? Image.network(
+                        course.image!,
+                        width: 72,
+                        height: 72,
+                        fit: BoxFit.cover,
+                        errorBuilder: (_, _, _) => _placeholderThumb(),
+                      )
+                    : _placeholderThumb(),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      course.title,
+                      style: Theme.of(context).textTheme.titleMedium,
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 4),
+                    Text(
+                      [
+                        course.subject,
+                        course.location,
+                      ].where((s) => s != null && s.isNotEmpty).join(' • '),
+                      style: Theme.of(context).textTheme.bodySmall,
+                    ),
+                    const SizedBox(height: 6),
+                    Row(
+                      children: [
+                        const Icon(Icons.star, size: 16, color: Colors.amber),
+                        const SizedBox(width: 4),
+                        Text(
+                          '${course.averageRating.toStringAsFixed(1)} (${course.reviewCount})',
+                        ),
+                        const Spacer(),
+                        Text(
+                          course.feeDisplay,
+                          style: const TextStyle(fontWeight: FontWeight.bold),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _placeholderThumb() {
+    return Container(
+      width: 72,
+      height: 72,
+      color: Colors.grey.shade300,
+      child: const Icon(Icons.school_outlined),
+    );
+  }
+}
